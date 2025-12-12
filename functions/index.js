@@ -140,11 +140,11 @@ export async function onRequest(context) {
     const hasValidUrl = Boolean(normalizedUrl);
 
     return `
-      <div class="site-card group bg-white border border-primary-100/60 rounded-xl shadow-sm hover:shadow-md hover:-translate-y-[2px] transition-all duration-200 overflow-hidden" data-id="${site.id}" data-name="${safeDataName}" data-url="${dataUrlAttr}" data-catalog="${safeDataCatalog}">
+      <div class="site-card group bg-white border border-primary-100/60 rounded-xl shadow-sm overflow-hidden" data-id="${site.id}" data-name="${safeDataName}" data-url="${dataUrlAttr}" data-catalog="${safeDataCatalog}">
         <div class="p-5">
           <a href="${hrefValue}" ${hasValidUrl ? 'target="_blank" rel="noopener noreferrer"' : ''} class="block">
             <div class="flex items-start">
-              <div class="flex-shrink-0 mr-4">
+              <div class="site-icon flex-shrink-0 mr-4 transition-all duration-300">
                 ${
                   logoUrl
                     ? `<img src="${escapeHTML(logoUrl)}" alt="${safeName}" class="w-10 h-10 rounded-lg object-cover bg-gray-100">`
@@ -152,7 +152,7 @@ export async function onRequest(context) {
                 }
               </div>
               <div class="flex-1 min-w-0">
-                <h3 class="text-base font-medium text-gray-900 truncate" title="${safeName}">${safeName}</h3>
+                <h3 class="site-title text-base font-medium text-gray-900 truncate transition-all duration-300 origin-left" title="${safeName}">${safeName}</h3>
                 <span class="inline-flex items-center px-2 py-0.5 mt-1 rounded-full text-xs font-medium bg-secondary-100 text-primary-700">
                   ${safeCatalog}
                 </span>

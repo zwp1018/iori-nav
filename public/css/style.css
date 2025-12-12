@@ -21,11 +21,40 @@
 /* 卡片悬停效果 */
 .site-card {
   transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  will-change: transform;
 }
 
 .site-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+  transform: scale(1.15) translateY(-10px);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+  z-index: 10;
+  border: 2px solid #416d9d;
+}
+
+/* 图标消失动画 */
+.site-icon {
+  /* Ensure initial state matches Tailwind classes (w-10 = 2.5rem, mr-4 = 1rem) */
+  width: 2.5rem;
+  margin-right: 1rem;
+  opacity: 1;
+  /* Use transition from Tailwind class or override here if needed, keeping it simple */
+}
+
+.site-card:hover .site-icon {
+  width: 0;
+  margin-right: 0;
+  opacity: 0;
+  transition-delay: 0.1s; /* Start after card pop */
+}
+
+/* 标题放大动画 */
+.site-title {
+  transform-origin: left center;
+}
+
+.site-card:hover .site-title {
+  transform: scale(1.2);
+  transition-delay: 0.1s; /* Sync with icon shrink */
 }
 
 /* 复制成功提示动画 */
