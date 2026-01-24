@@ -85,18 +85,6 @@ h1 {
   position: relative;
 }
 
-.update-dot {
-    position: absolute;
-    top: -4px;
-    right: -4px;
-    width: 10px;
-    height: 10px;
-    background-color: #ef4444;
-    border-radius: 50%;
-    border: 2px solid white;
-    z-index: 10;
-}
-
 .refresh-btn:hover {
   background-color: #c2410c;
   color: #ffffff;

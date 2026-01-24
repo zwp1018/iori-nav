@@ -2,35 +2,16 @@
 // Separated from admin.js
 
 window.markCacheStale = function() {
-    const btn = document.getElementById('refreshCacheBtn');
-    if(btn) {
-        btn.classList.add('has-updates');
-        if(!btn.querySelector('.update-dot')) {
-             const dot = document.createElement('span');
-             dot.className = 'update-dot absolute top-0 right-0 -mt-1 -mr-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white';
-             btn.style.position = 'relative';
-             btn.appendChild(dot);
-        }
-    }
-    localStorage.setItem('nav_cache_stale', 'true');
+    // Set cookie to indicate stale cache (valid for 1 year)
+    // The backend will detect this cookie, clear KV cache, and then clear the cookie
+    document.cookie = "iori_cache_stale=1; path=/; max-age=31536000; SameSite=Lax";
 }
 
 window.resetCacheStale = function() {
-    const btn = document.getElementById('refreshCacheBtn');
-    if(btn) {
-        btn.classList.remove('has-updates');
-        const dot = btn.querySelector('.update-dot');
-        if(dot) dot.remove();
-    }
-    localStorage.removeItem('nav_cache_stale');
+    // No-op: Cookie is cleared by backend response
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Check stale state on load
-    if(localStorage.getItem('nav_cache_stale') === 'true') {
-       window.markCacheStale();
-    }
-
     // Refresh Cache Button Logic
     const refreshCacheBtn = document.getElementById('refreshCacheBtn');
     const refreshCacheModal = document.getElementById('refreshCacheModal');

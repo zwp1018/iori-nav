@@ -551,8 +551,9 @@ document.addEventListener('DOMContentLoaded', function() {
                  localStorage.setItem('iori_last_category', catalogId);
                  setCookie('iori_last_category', catalogId, 365);
              } else {
-                 localStorage.removeItem('iori_last_category'); // "All" or empty
-                 setCookie('iori_last_category', '', -1);
+                 // Explicitly save "all" state
+                 localStorage.setItem('iori_last_category', 'all');
+                 setCookie('iori_last_category', 'all', 365);
              }
         }
 
@@ -749,6 +750,15 @@ document.addEventListener('DOMContentLoaded', function() {
                moreBtn.classList.add('inactive');
           }
       }
+
+      // 4. Highlight "All" button explicitly if no catalogId provided (means "All")
+      if (!catalogId) {
+          const allBtn = document.querySelector('a[href="?catalog=all"]');
+          if (allBtn) {
+              allBtn.classList.remove('inactive');
+              allBtn.classList.add('active', 'nav-item-active');
+          }
+      }
       
       // Update Sidebar (Vertical Menu)
       const sidebar = document.getElementById('sidebar');
@@ -801,8 +811,26 @@ document.addEventListener('DOMContentLoaded', function() {
       const hasCatalogParam = urlParams.has('catalog');
       
       if (config.rememberLastCategory && !hasCatalogParam) {
-          const lastId = localStorage.getItem('iori_last_category');
+          let lastId = localStorage.getItem('iori_last_category');
+          
+          // Fallback to Cookie if LocalStorage is missing (e.g. cleared or not synced)
+          if (!lastId) {
+              const match = document.cookie.match(/iori_last_category=(all|\d+)/);
+              if (match) {
+                  lastId = match[1];
+              }
+          }
+
           if (lastId) {
+              if (lastId === 'all') {
+                  // Explicitly restore "All Categories" state
+                  const allSites = window.IORI_SITES || [];
+                  renderSites(allSites);
+                  updateHeading(null, null, allSites.length);
+                  updateNavigationState(null);
+                  return;
+              }
+
               // Try to find the category link in DOM to get correct Name and Href
               const link = document.querySelector(`a[data-id="${lastId}"]`);
               

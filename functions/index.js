@@ -123,20 +123,33 @@ export async function onRequest(context) {
   const url = new URL(request.url);
   const isHomePage = url.pathname === '/' && !url.search;
   
+  // Cookie Bridge: Check for stale cache cookie
+  const cookies = request.headers.get('Cookie') || '';
+  const hasStaleCookie = cookies.includes('iori_cache_stale=1');
+  let shouldClearCookie = false;
+
   if (isHomePage) {
-    const cacheKey = isAuthenticated ? 'home_html_private' : 'home_html_public';
-    try {
-      const cachedHtml = await env.NAV_AUTH.get(cacheKey);
-      if (cachedHtml) {
-        return new Response(cachedHtml, {
-          headers: { 
-            'Content-Type': 'text/html; charset=utf-8',
-            'X-Cache': 'HIT'
+    if (isAuthenticated && hasStaleCookie) {
+        // Detected stale cookie + Admin -> Clear Cache & Skip Read
+        await env.NAV_AUTH.delete('home_html_private');
+        await env.NAV_AUTH.delete('home_html_public');
+        shouldClearCookie = true;
+    } else {
+        const cacheKey = isAuthenticated ? 'home_html_private' : 'home_html_public';
+        console.log("cacheKey:",cacheKey)
+        try {
+          const cachedHtml = await env.NAV_AUTH.get(cacheKey);
+          if (cachedHtml) {
+            return new Response(cachedHtml, {
+              headers: { 
+                'Content-Type': 'text/html; charset=utf-8',
+                'X-Cache': 'HIT'
+              }
+            });
           }
-        });
-      }
-    } catch (e) {
-      console.warn('Failed to read home cache:', e);
+        } catch (e) {
+          console.warn('Failed to read home cache:', e);
+        }
     }
   }
 
@@ -333,15 +346,23 @@ export async function onRequest(context) {
   if (!requestedCatalogName && !explicitAll) {
       // 优先级：Cookie (如果开启记忆) > 数据库默认设置
       let cookieCatId = null;
+      let isCookieAll = false;
       if (homeRememberLastCategory) {
           const cookies = request.headers.get('Cookie') || '';
-          const match = cookies.match(/iori_last_category=(\d+)/);
+          const match = cookies.match(/iori_last_category=(all|\d+)/);
           if (match) {
-              cookieCatId = parseInt(match[1]);
+              if (match[1] === 'all') {
+                  isCookieAll = true;
+              } else {
+                  cookieCatId = parseInt(match[1]);
+              }
           }
       }
 
-      if (cookieCatId && categoryMap.has(cookieCatId)) {
+      if (isCookieAll) {
+          // Explicitly set to 'all' to bypass default category logic
+          requestedCatalogName = 'all';
+      } else if (cookieCatId && categoryMap.has(cookieCatId)) {
           // 通过 ID 反查 Name (因为后续逻辑基于 Name)
           requestedCatalogName = categoryMap.get(cookieCatId).catelog;
       } else {
@@ -1450,6 +1471,11 @@ export async function onRequest(context) {
   const response = new Response(html, {
     headers: { 'Content-Type': 'text/html; charset=utf-8' }
   });
+
+  if (shouldClearCookie) {
+      // Clear the stale cookie
+      response.headers.append('Set-Cookie', 'iori_cache_stale=; Path=/; Max-Age=0; SameSite=Lax');
+  }
 
   if (layoutRandomWallpaper) {
     // 强制禁用缓存，设置头部

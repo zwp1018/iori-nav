@@ -884,10 +884,6 @@ function setupBookmarkPrivacyLinkage(selectId, checkboxId) {
 
 // 初始化监听器
 document.addEventListener('DOMContentLoaded', () => {
-   if(localStorage.getItem('nav_cache_stale') === 'true') {
-       window.markCacheStale();
-   }
-
    setupBookmarkPrivacyLinkage('addBookmarkCatelog', 'addBookmarkIsPrivate');
    setupBookmarkPrivacyLinkage('editBookmarkCatelog', 'editBookmarkIsPrivate');
 
